@@ -6,14 +6,22 @@ let sortKey = "default";
 
 /* ── Boot ────────────────────────────────────────────────── */
 document.addEventListener("DOMContentLoaded", async () => {
+  const dataUrl = new URL("data.json", document.baseURI).href;
+  let rawText = "";
   try {
-    const res = await fetch("data.json");
-    if (!res.ok) throw new Error(res.statusText);
-    DATA = await res.json();
+    const res = await fetch(dataUrl, { cache: "no-cache" });
+    if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText} — ${dataUrl}`);
+    rawText = await res.text();
+    DATA = JSON.parse(rawText);
   } catch (e) {
+    const preview = rawText ? `<pre style="font-size:11px;text-align:left;overflow:auto;max-height:120px;background:#0d1117;padding:8px;border-radius:6px;margin-top:8px">${rawText.slice(0, 300).replace(/</g,"&lt;")}</pre>` : "";
     document.getElementById("main").innerHTML =
       `<div class="welcome"><div class="icon">⚠️</div>
-       <h2>Could not load data.json</h2><p>${e.message}</p></div>`;
+       <h2>Could not load data.json</h2>
+       <p style="font-family:monospace;word-break:break-all">${e.message}</p>
+       <p style="font-size:11px;color:var(--muted)">URL: ${dataUrl}</p>
+       ${preview}</div>`;
+    console.error("data.json load error", e, "raw:", rawText.slice(0, 500));
     return;
   }
 
