@@ -3,6 +3,15 @@ let DATA = null;           // full manifest
 let activeSongId = null;
 let searchQuery = "";
 let sortKey = "default";
+let activeMode = "transitions";  // "transitions" | "generative"
+
+const TRANSITION_TYPES = new Set(["gap2", "gap4", "gap2_inter", "gap4_inter"]);
+const GENERATIVE_TYPES  = new Set(["random_infill", "track_resample"]);
+
+function _songMode(song) {
+  const gt = song.pairs?.[0]?.gen_type;
+  return GENERATIVE_TYPES.has(gt) ? "generative" : "transitions";
+}
 
 /* ── Boot ────────────────────────────────────────────────── */
 document.addEventListener("DOMContentLoaded", async () => {
@@ -44,10 +53,24 @@ document.addEventListener("DOMContentLoaded", async () => {
   showWelcome();
 });
 
+/* ── Mode switch ─────────────────────────────────────────── */
+function setMode(mode, btn) {
+  activeMode = mode;
+  document.querySelectorAll(".mode-tab").forEach(b => b.classList.toggle("active", b.dataset.mode === mode));
+  activeSongId = null;
+  searchQuery = "";
+  document.getElementById("search").value = "";
+  // Show/hide sort (only meaningful for transitions)
+  const sortRow = document.querySelector(".filter-row");
+  if (sortRow) sortRow.style.display = mode === "transitions" ? "" : "none";
+  renderSongList();
+  showWelcome();
+}
+
 /* ── Sidebar ─────────────────────────────────────────────── */
 function renderSongList() {
   const list = document.getElementById("song-list");
-  let songs = DATA.songs;
+  let songs = DATA.songs.filter(s => _songMode(s) === activeMode);
 
   if (searchQuery) {
     songs = songs.filter(s =>
@@ -58,11 +81,14 @@ function renderSongList() {
 
   list.innerHTML = songs.map(s => {
     const nPairs = s.pairs.length;
-    const bpms = [...new Set(s.pairs.map(p => Math.round(p.bpm)))].join(", ");
+    const isGen = activeMode === "generative";
+    const meta = isGen
+      ? `${nPairs} example${nPairs !== 1 ? "s" : ""}`
+      : (() => { const bpms = [...new Set(s.pairs.map(p => Math.round(p.bpm)).filter(Boolean))].join(", "); return `${nPairs} pair${nPairs !== 1 ? "s" : ""}${bpms ? " · " + bpms + " BPM" : ""}`; })();
     const active = s.song_id === activeSongId ? " active" : "";
     return `<li class="song-item${active}" data-id="${s.song_id}" onclick="selectSong('${s.song_id}')">
       <div class="song-title">${s.title}</div>
-      <div class="song-meta">${nPairs} pair${nPairs !== 1 ? "s" : ""} · ${bpms} BPM</div>
+      <div class="song-meta">${meta}</div>
     </li>`;
   }).join("");
 
@@ -83,7 +109,14 @@ function selectSong(songId) {
 
 /* ── Main panel ──────────────────────────────────────────── */
 function showWelcome() {
-  document.getElementById("main").innerHTML = `
+  const isGen = activeMode === "generative";
+  document.getElementById("main").innerHTML = isGen ? `
+    <div class="welcome">
+      <div class="icon">🎲</div>
+      <h2>Infill &amp; Resample</h2>
+      <p>Select a piece from the sidebar to see MIDI-GPT's unconditional generation
+         capabilities — random bar infilling and full autoregressive track resampling.</p>
+    </div>` : `
     <div class="welcome">
       <div class="icon">🎹</div>
       <h2>MIDI-GPT Transition Examples</h2>
@@ -106,11 +139,16 @@ function renderPairs(songId) {
   else if (sortKey === "jsd_desc") pairs.sort((a, b) => b.metrics.pitch_jsd - a.metrics.pitch_jsd);
   else if (sortKey === "penalty")  pairs.sort((a, b) => b.metrics.cross_cross_penalty_per_tok - a.metrics.cross_cross_penalty_per_tok);
 
+  const isGen = activeMode === "generative";
+  const subText = isGen
+    ? `${pairs.length} example${pairs.length !== 1 ? "s" : ""} · piano-roll generation videos`
+    : `${pairs.length} pair${pairs.length !== 1 ? "s" : ""} · piano-roll transition videos`;
+
   const main = document.getElementById("main");
   main.innerHTML = `
     <div class="main-header">
       <h1>${song.title}</h1>
-      <div class="sub">${pairs.length} pair${pairs.length !== 1 ? "s" : ""} · piano-roll transition videos</div>
+      <div class="sub">${subText}</div>
     </div>
     <div class="pair-grid">
       ${pairs.map(p => renderPairCard(p)).join("")}

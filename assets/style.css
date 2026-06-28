@@ -90,6 +90,32 @@ header .spacer { flex: 1; }
   flex-shrink: 0;
 }
 
+/* ── Mode tabs (top of sidebar) ───────────────────────────── */
+.mode-tabs {
+  display: flex;
+  gap: 2px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.mode-tab {
+  flex: 1;
+  padding: 5px 8px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: background .15s, color .15s;
+  white-space: nowrap;
+}
+.mode-tab:hover { background: var(--border); color: var(--text); }
+.mode-tab.active { background: var(--accent); color: #fff; }
+
 .search-wrap {
   position: relative;
 }

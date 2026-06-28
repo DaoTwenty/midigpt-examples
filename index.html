@@ -11,7 +11,7 @@
 <div id="app">
 
   <header>
-    <div class="logo">MIDI-GPT <span>Transitions</span></div>
+    <div class="logo">MIDI-GPT <span>Examples</span></div>
     <div class="stats">
       <span id="stat-songs">—</span> songs ·
       <span id="stat-pairs">—</span> pairs
@@ -37,6 +37,10 @@
 
     <aside id="sidebar">
       <div class="sidebar-top">
+        <div class="mode-tabs">
+          <button class="mode-tab active" data-mode="transitions" onclick="setMode('transitions',this)">Transitions</button>
+          <button class="mode-tab"        data-mode="generative"  onclick="setMode('generative',this)">Infill & Resample</button>
+        </div>
         <div class="search-wrap">
           <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89
