@@ -120,24 +120,114 @@ function renderPairs(songId) {
   pairs.forEach(p => initCard(p.pair_id));
 }
 
+/* ── Infill / Resample card renderers ────────────────────── */
+function _makeTabBtns(pairId, tabs) {
+  return tabs.map((t, i) =>
+    `<button class="tab-btn ${t.cls}${i === 0 ? " active" : ""}"
+             onclick="switchTab('${pairId}','${t.key}',this)">${t.label}</button>`
+  ).join("");
+}
+
+function renderPairCardInfill(pair, instBadges) {
+  const vids = pair.videos || [];
+  const tabs = vids.map(k => {
+    if (k === "original") return { key: k, label: "Original", cls: "orig" };
+    if (k.startsWith("gt_")) return { key: k, label: `GT · ${k.replace("gt_gen0","Gen ")}`, cls: "gt" };
+    return { key: k, label: `TR · ${k.replace("tr_gen0","Gen ")}`, cls: "tr" };
+  });
+  const tabBtns = _makeTabBtns(pair.pair_id, tabs);
+  const infillPct = pair.infill_p != null ? `${Math.round(pair.infill_p * 100)}%` : "~50%";
+
+  return `
+<div class="pair-card" id="card-${pair.pair_id}">
+  <div class="card-header">
+    <div>
+      <div class="pair-label">Random Bar Infilling</div>
+      <div class="badges">
+        <span class="badge gap">🎲 infill ${infillPct} of bars</span>
+        <span class="badge scope-single">single piece</span>
+        ${pair.transcribed ? '<span class="badge tr">GT + TR</span>' : ""}
+        ${instBadges}
+      </div>
+    </div>
+  </div>
+  <div class="video-section">
+    <div class="tab-bar">${tabBtns}</div>
+    <div class="video-wrap">
+      <div class="video-loading" id="vload-${pair.pair_id}">Loading…</div>
+      <video id="vid-${pair.pair_id}" controls preload="none" style="display:none"
+             oncanplay="document.getElementById('vload-${pair.pair_id}').style.display='none';this.style.display='block'">
+      </video>
+    </div>
+  </div>
+</div>`;
+}
+
+function renderPairCardResample(pair, instBadges) {
+  const vids = pair.videos || [];
+  const tabs = vids.map(k => {
+    if (k === "original") return { key: k, label: "Original", cls: "orig" };
+    const m = k.match(/^gt_t(\d+)_gen(\d+)$/);
+    if (m) return { key: k, label: `GT T${m[1]} · Gen ${+m[2]+1}`, cls: "gt" };
+    const m2 = k.match(/^tr_t(\d+)_gen(\d+)$/);
+    if (m2) return { key: k, label: `TR T${m2[1]} · Gen ${+m2[2]+1}`, cls: "tr" };
+    return { key: k, label: k, cls: "gt" };
+  });
+  const tabBtns = _makeTabBtns(pair.pair_id, tabs);
+
+  return `
+<div class="pair-card" id="card-${pair.pair_id}">
+  <div class="card-header">
+    <div>
+      <div class="pair-label">Track Resampling</div>
+      <div class="badges">
+        <span class="badge gap">♻️ AR track resample</span>
+        <span class="badge scope-single">single piece</span>
+        ${pair.transcribed ? '<span class="badge tr">GT + TR</span>' : ""}
+        ${instBadges}
+      </div>
+    </div>
+  </div>
+  <div class="video-section">
+    <div class="tab-bar">${tabBtns}</div>
+    <div class="video-wrap">
+      <div class="video-loading" id="vload-${pair.pair_id}">Loading…</div>
+      <video id="vid-${pair.pair_id}" controls preload="none" style="display:none"
+             oncanplay="document.getElementById('vload-${pair.pair_id}').style.display='none';this.style.display='block'">
+      </video>
+    </div>
+  </div>
+</div>`;
+}
+
 /* ── Pair card HTML ──────────────────────────────────────── */
 function renderPairCard(pair) {
   const pairNum = pair.pair_id.match(/__pair(\d+)$/)?.[1] ?? "?";
-  const m = pair.metrics;
+  const m = pair.metrics ?? {};
+  const genType = pair.gen_type ?? "gap4";
+  const scope   = pair.scope   ?? "intra";
 
   // Instruments
-  const insts = [...new Map(pair.instruments.map(i => [i.family, i])).values()];
+  const insts = [...new Map((pair.instruments || []).map(i => [i.family, i])).values()];
   const instBadges = insts.map(i =>
     `<span class="badge inst">${i.is_drum ? "🥁" : "🎸"} ${i.family}</span>`
   ).join("");
 
-  // Video tabs
-  const tabs = [
-    { key: "gt_gen00", label: "GT · Gen 1", cls: "gt" },
-    { key: "gt_gen01", label: "GT · Gen 2", cls: "gt" },
-    { key: "tr_gen00", label: "TR · Gen 1", cls: "tr" },
-    { key: "tr_gen01", label: "TR · Gen 2", cls: "tr" },
-  ].filter(t => pair.videos.includes(t.key));
+  // Dispatch to specialised card renderers
+  if (genType === "random_infill") return renderPairCardInfill(pair, instBadges);
+  if (genType === "track_resample") return renderPairCardResample(pair, instBadges);
+
+  // Build video tabs dynamically from pair.videos
+  const VIDEO_META = {
+    "gt_gen00": { label: "GT · Gen 1", cls: "gt" },
+    "gt_gen01": { label: "GT · Gen 2", cls: "gt" },
+    "tr_gen00": { label: "TR · Gen 1", cls: "tr" },
+    "tr_gen01": { label: "TR · Gen 2", cls: "tr" },
+  };
+  const tabs = (pair.videos || []).map(k => {
+    const meta = VIDEO_META[k] ?? { label: k, cls: "gt" };
+    return { key: k, ...meta };
+  });
 
   const tabBtns = tabs.map((t, i) =>
     `<button class="tab-btn ${t.cls}${i === 0 ? " active" : ""}"
@@ -175,15 +265,25 @@ function renderPairCard(pair) {
   const f1 = m.mean_note_f1 ?? 0;
   const f1Pct = (f1 * 100).toFixed(1);
 
+  const scopeBadge = scope === "inter"
+    ? `<span class="badge scope-inter">🔀 inter-song</span>`
+    : `<span class="badge scope-intra">↩ intra-song</span>`;
+  const gapBadge = pair.gap_bars ? `<span class="badge gap">⏸ ${pair.gap_bars} gap bars</span>` : "";
+  const winBadge = pair.window_bars ? `<span class="badge gap">⊞ ${pair.window_bars}W bars</span>` : "";
+  const interLabel = scope === "inter" && pair.title_a
+    ? `<div class="inter-label">${pair.title_a} → ${pair.title_b}</div>`
+    : "";
+
   return `
 <div class="pair-card" id="card-${pair.pair_id}">
   <div class="card-header">
     <div>
       <div class="pair-label">Pair ${pairNum}</div>
+      ${interLabel}
       <div class="badges">
-        <span class="badge bpm">♩ ${pair.bpm} BPM</span>
-        <span class="badge gap">⏸ ${pair.gap_bars} gap bars</span>
-        <span class="badge gap">⊞ ${pair.window_bars}W bars</span>
+        ${pair.bpm ? `<span class="badge bpm">♩ ${pair.bpm} BPM</span>` : ""}
+        ${gapBadge}${winBadge}
+        ${scopeBadge}
         ${pair.transcribed ? '<span class="badge tr">transcribed</span>' : ""}
         ${instBadges}
       </div>

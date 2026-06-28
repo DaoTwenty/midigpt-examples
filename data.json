@@ -1,7 +1,115 @@
 {
-  "n_songs": 40,
-  "n_pairs": 103,
+  "n_songs": 43,
+  "n_pairs": 106,
   "songs": [
+    {
+      "song_id": "_inter_transitions_preview",
+      "title": "\ud83d\udd00 Inter-Song Transitions (Preview)",
+      "pairs": [
+        {
+          "pair_id": "a_teens_a_teens__mamma_mia_58c__INTO__abba_dancing_queen_783f49__gap4",
+          "gen_type": "gap4",
+          "scope": "inter",
+          "title_a": "A-Teens: Mamma Mia",
+          "title_b": "ABBA: Dancing Queen",
+          "gap_bars": 4,
+          "window_bars": 2,
+          "sec_a": [
+            19,
+            21
+          ],
+          "sec_b": [
+            5,
+            7
+          ],
+          "transcribed": true,
+          "instruments": [
+            {
+              "prog": 27,
+              "is_drum": false,
+              "family": "Guitar"
+            },
+            {
+              "prog": 80,
+              "is_drum": false,
+              "family": "Synth Lead"
+            }
+          ],
+          "videos": [
+            "gt_gen00"
+          ],
+          "metrics": {}
+        }
+      ]
+    },
+    {
+      "song_id": "_random_infill_preview",
+      "title": "\ud83c\udfb2 Random Bar Infilling (Preview)",
+      "pairs": [
+        {
+          "pair_id": "alford_kenneth_j__colonel_bogey_march_2b759e__sec0__rinfill",
+          "gen_type": "random_infill",
+          "scope": "single",
+          "sec": [
+            20,
+            28
+          ],
+          "infill_p": 0.5,
+          "transcribed": true,
+          "instruments": [
+            {
+              "prog": 0,
+              "is_drum": false,
+              "family": "Piano"
+            }
+          ],
+          "videos": [
+            "original",
+            "gt_gen00",
+            "gt_gen01",
+            "tr_gen00",
+            "tr_gen01"
+          ],
+          "metrics": {}
+        }
+      ]
+    },
+    {
+      "song_id": "_track_resample_preview",
+      "title": "\u267b\ufe0f Track Resampling (Preview)",
+      "pairs": [
+        {
+          "pair_id": "a_teens_a_teens__mamma_mia_58c4ff__sec0__tresample",
+          "gen_type": "track_resample",
+          "scope": "single",
+          "sec": [
+            2,
+            10
+          ],
+          "transcribed": true,
+          "instruments": [
+            {
+              "prog": 2,
+              "is_drum": false,
+              "family": "Piano"
+            },
+            {
+              "prog": 39,
+              "is_drum": false,
+              "family": "Bass"
+            }
+          ],
+          "videos": [
+            "original",
+            "gt_t00_gen00",
+            "gt_t00_gen01",
+            "gt_t01_gen00",
+            "gt_t01_gen01"
+          ],
+          "metrics": {}
+        }
+      ]
+    },
     {
       "song_id": "adson_john_courtly_masquing_ayres_aea0be",
       "title": "Adson John Courtly Masquing Ayres",

@@ -274,10 +274,14 @@ select:focus { border-color: var(--accent); }
   color: var(--muted);
 }
 
-.badge.bpm   { color: #7dd3fc; border-color: rgba(125, 211, 252, .3); background: rgba(125, 211, 252, .07); }
-.badge.gap   { color: #c4b5fd; border-color: rgba(196, 181, 253, .3); background: rgba(196, 181, 253, .07); }
-.badge.inst  { color: #86efac; border-color: rgba(134, 239, 172, .3); background: rgba(134, 239, 172, .07); }
-.badge.tr    { color: #fcd34d; border-color: rgba(252, 211, 77, .3);  background: rgba(252, 211, 77, .07); }
+.badge.bpm         { color: #7dd3fc; border-color: rgba(125, 211, 252, .3); background: rgba(125, 211, 252, .07); }
+.badge.gap         { color: #c4b5fd; border-color: rgba(196, 181, 253, .3); background: rgba(196, 181, 253, .07); }
+.badge.inst        { color: #86efac; border-color: rgba(134, 239, 172, .3); background: rgba(134, 239, 172, .07); }
+.badge.tr          { color: #fcd34d; border-color: rgba(252, 211, 77, .3);  background: rgba(252, 211, 77, .07); }
+.badge.scope-inter  { color: #fb923c; border-color: rgba(251,146,60,.3);  background: rgba(251,146,60,.07); }
+.badge.scope-intra  { color: #a3e635; border-color: rgba(163,230,53,.3);  background: rgba(163,230,53,.07); }
+.badge.scope-single { color: #e879f9; border-color: rgba(232,121,249,.3); background: rgba(232,121,249,.07); }
+.inter-label { font-size: 11px; color: #fb923c; margin: 2px 0 4px; font-style: italic; }
 
 /* ── Video tabs ───────────────────────────────────────────── */
 .video-section { padding: 14px 16px; }
